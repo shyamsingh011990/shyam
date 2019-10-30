@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+
+<body>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://www.redotheweb.com/DependencyWheel/js/d3.dependencyWheel.js"></script>
+    <script>
+        <!-- My JSON is in following style -->
+        json = JSON.parse('{"A":["C"],"B":["F","C","D"],"G":["C","D"],"D":["A","G","D"]}')
+
+        var packageNames = [];
+        var obj = {}
+        var matrix = []
+
+        for (var key in json) {
+            if (json.hasOwnProperty(key) && !(key in obj)) {
+                packageNames.push(key);
+                obj[key] = true;
+            }
+            json[key].forEach(function (neighbor) {
+                if (!(neighbor in obj)) {
+                    packageNames.push(neighbor);
+                    obj[neighbor] = true;
+                }
+            });
+        }
+        // Define a new array, padded with zeros
+        var matrix_row = Array.apply(null, new Array(packageNames.length)).map(Number.prototype.valueOf,0);
+
+        for (var package of packageNames) {
+            matrix[packageNames.indexOf(package)] = matrix_row;
+            if (json[package] != null) {
+                json[package].forEach(function (neighbor) {
+                    matrix[packageNames.indexOf(package)][packageNames.indexOf(neighbor)] = 1;
+                });
+            }
+        }
+
+        console.log(matrix);
+        console.log(packageNames);
+
+        jQuery(function () {
+            var chart = d3.chart.dependencyWheel();
+            d3.select('#chart_placeholder')
+                .datum({
+                    packageNames: packageNames,
+                    matrix: matrix
+                })
+                .call(chart);
+        });
+    </script>
+    <div id="chart_placeholder"></div>
+</body>
+</html>
